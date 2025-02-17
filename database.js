@@ -1,10 +1,9 @@
 const fs = require('fs');
 const mysql = require('mysql2');
 const conf = JSON.parse(fs.readFileSync('conf.json'));
-conf.ssl = {
-   ca: fs.readFileSync(__dirname + '/ca.pem')
-}
-const connection = mysql.createConnection(conf);
+conf.db.ssl.ca = fs.readFileSync(__dirname + '/ca.pem');
+
+const connection = mysql.createConnection(conf.db);
 
 const executeQuery = (sql) => {
    return new Promise((resolve, reject) => {
@@ -26,7 +25,6 @@ const database = {
         id INT PRIMARY KEY AUTO_INCREMENT,
         name varchar(20)
         )
-            
       `);
       return await executeQuery(`
         CREATE TABLE IF NOT EXISTS booking (
@@ -35,8 +33,7 @@ const database = {
         date DATE NOT NULL,
         hour INT NOT NULL,
         name VARCHAR(50),
-        FOREIGN KEY (idType) REFERENCES type(id)      
-      `);
+        FOREIGN KEY (idType) REFERENCES type(id));`);
    },
    insert: async (booking) => {
       let sql = `
@@ -45,7 +42,7 @@ const database = {
             '${booking.idType}', 
             '${booking.date}', 
             '${booking.hour}', 
-            ${booking.name}
+            '${booking.name})'
            `;
       const result = await executeQuery(sql);
    },

@@ -3,9 +3,11 @@ const http = require('http');
 const path = require('path');
 const app = express();
 const database = require("./database");
-database.createTable();
+database.createTables();
 
 app.use("/", express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "node_modules/bootstrap/dist/"))); //permette accesso a bootstrap all'appliacazione lato client
+
 app.post("/insert", async (req, res) => {
   const accident = req.body.accident;
   try {
