@@ -3,8 +3,8 @@ export const generateMiddleware=()=>{
         load: ()=>{
             try {
                 return new Promise((resolve, reject) => {
-                    fetch("/get").then(r => r.json()).then(data => {
-                        resolve(data.images);
+                    fetch("/bookings").then(r => r.json()).then(data => {
+                        resolve(data);
                     }).catch(err => {
                         reject(err);
                     })
@@ -34,8 +34,8 @@ export const generateMiddleware=()=>{
                 console.error(e);
             }
         },
-        upload: (image) => {
-            const body = image;
+        insert: (booking) => {
+            const body = booking;
             const fetchOptions = {
                 method: 'post',
                 body: body
@@ -43,8 +43,8 @@ export const generateMiddleware=()=>{
 
             try {
                 return new Promise((resolve, reject) => {
-                    fetch("/add", fetchOptions).then(r => r.json()).then(data => {
-                        resolve(data.images);
+                    fetch("/insert", fetchOptions).then(r => r.json()).then(data => {
+                        resolve(data);
                     }).catch(err => {
                         reject(err);
                     })
