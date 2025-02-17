@@ -53,13 +53,17 @@ const database = {
            `;
       return executeQuery(sql);
    },
-   select: async () => {
+   selectBookings: async () => {
       let sql = `
         SELECT b.id, t.name type, b.date, b.hour, b.name
         FROM booking AS b
         JOIN type as t ON b.idType = t.id
            `;
       const result = await executeQuery(sql);
+      return result;
+   },
+   selectTypes: async () => {
+      const result = await executeQuery("SELECT (id, name) FROM type");
       return result;
    },
    drop: async () => {
