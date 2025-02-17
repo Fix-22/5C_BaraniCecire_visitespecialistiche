@@ -1,8 +1,9 @@
-import {generateReservationForm} from "./formComponent/formComponent.js";
-import {generateNavbar} from "./navbarComponent/navbarComponent.js";
-import {generateButtonComponent} from "./buttonComponent/buttonComponent.js";
-import {generateTable} from "./tableComponent/tableComponent.js";
+import {generateReservationForm} from "./scripts/formComponent/formComponent.js";
+import {generateNavbar} from "./scripts/navbarComponent/navbarComponent.js";
+import {generateButtonComponent} from "./scripts/buttonComponent/buttonComponent.js";
+import {generateTable} from "./scripts/tableComponent/tableComponent.js";
 import { generateMiddleware } from "./scripts/middlewareComponent/middlewareComponent.js";
+import { generatePubSub } from "./scripts/pubSubComponent/pubSubComponent.js";
 
 const modalBody = document.getElementById("modalBody");
 const navbarContainer = document.getElementById("navbarContainer");
@@ -15,22 +16,26 @@ let confFileContent;
 const hours = [8, 9, 10, 11, 12];
 const days = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì"];
 
+const pubSub=generatePubSub();
 const componentTable = generateTable(tableContainer);
 const reservationForm = generateReservationForm(modalBody);
-const navbar = generateNavbar(navbarContainer);
+const navbar = generateNavbar(navbarContainer, pubSub);
 const prevButton = generateButtonComponent(prevButtonContainer) ;
 const nextButton = generateButtonComponent(nextButtonContainer) ;
 const middlewareComponent= generateMiddleware();
 
 middlewareComponent.load().then(remoteData=>{
-    navbar.build(confFileContent["tipologie"]);
+    console.log(remoteData);
+    const types = remoteData.types.map(e=>e.name);
+    console.log(types);
+    navbar.build(types);
     navbar.render();
-    navbar.onclick(category => {
+   pubSub.subscribe("change-tab" ,category => {
         reservationForm.setType(category);
         spinner.classList.remove("d-none");
-        componenteFetch.getData("clinica").then((r) => {
+        middlewareComponent.load().then((r) => {
             spinner.classList.add("d-none");
-            componentTable.setData(r ,category)
+            componentTable.setData(r.bookings ,category);
             componentTable.render();
         });
     });

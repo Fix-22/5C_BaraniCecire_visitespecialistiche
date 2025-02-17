@@ -63,7 +63,7 @@ const database = {
       return result;
    },
    selectTypes: async () => {
-      const result = await executeQuery("SELECT (id, name) FROM type");
+      const result = await executeQuery("SELECT name FROM type");
       return result;
    },
    drop: async () => {

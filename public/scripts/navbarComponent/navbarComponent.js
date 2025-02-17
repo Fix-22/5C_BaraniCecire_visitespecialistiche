@@ -1,15 +1,11 @@
-export const generateNavbar = (parentElement) => {
+export const generateNavbar = (parentElement, pubSub) => {
     let configuration;
-    let callback;
     let currentCategory;
 
     return {
         build: (inputConfiguration) => {
             configuration = inputConfiguration;
             currentCategory = configuration[0];
-        },
-        onclick: (inputCallback) => {
-            callback = inputCallback;
         },
         render: () => {
             let html = '<div class="btn-group btn-group" data-toggle="buttons">';
@@ -34,7 +30,7 @@ export const generateNavbar = (parentElement) => {
                         }
                     });
                     
-                    callback(currentCategory);
+                    pubSub.publish("change-tab", currentCategory);
                 }
             });
         },
