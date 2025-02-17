@@ -9,15 +9,15 @@ app.use("/", express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "node_modules/bootstrap/dist/"))); //permette accesso a bootstrap all'appliacazione lato client
 
 app.post("/insert", async (req, res) => {
-  const accident = req.body.accident;
+  const booking = req.body.booking;
   try {
-    await database.insert(accident);
+    await database.insert(booking);
     res.json({result: "ok"});
   } catch (e) {
     res.status(500).json({result: "ko"});
   }
 })
-app.get('/accidents', async (req, res) => {
+app.get('/bookings', async (req, res) => {
     const list = await database.select();
     res.json(list);
 });
