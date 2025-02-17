@@ -18,7 +18,7 @@ app.post("/insert", async (req, res) => {
   }
 })
 app.get('/bookings', async (req, res) => {
-    const list = await database.select();
+    const list = await database.selectBookings();
     res.json(list);
 });
 app.delete('/delete/:id', async (req, res) => {
@@ -29,4 +29,9 @@ const server = http.createServer(app);
 const port = 5600;
 server.listen(port, () => {
   console.log("- server running on port: " + port);
+});
+
+app.get('/types', async (req, res) => {
+  const list = await database.selectTypes();
+  res.json(list);
 });
