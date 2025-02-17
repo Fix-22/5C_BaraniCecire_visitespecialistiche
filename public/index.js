@@ -12,25 +12,25 @@ const prevButtonContainer = document.getElementById("prevButtonContainer");
 const nextButtonContainer = document.getElementById("nextButtonContainer");
 const spinner = document.getElementById("spinner");
 
-let confFileContent;
 const hours = [8, 9, 10, 11, 12];
 const days = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì"];
 
 const pubSub=generatePubSub();
 const componentTable = generateTable(tableContainer);
-const reservationForm = generateReservationForm(modalBody);
+const reservationForm = generateReservationForm(modalBody, pubSub);
 const navbar = generateNavbar(navbarContainer, pubSub);
-const prevButton = generateButtonComponent(prevButtonContainer) ;
-const nextButton = generateButtonComponent(nextButtonContainer) ;
+const prevButton = generateButtonComponent(prevButtonContainer, pubSub) ;
+const nextButton = generateButtonComponent(nextButtonContainer, pubSub) ;
 const middlewareComponent= generateMiddleware();
 
 middlewareComponent.load().then(remoteData=>{
+    spinner.classList.add("d-none");
     console.log(remoteData);
     const types = remoteData.types.map(e=>e.name);
-    console.log(types);
+
     navbar.build(types);
     navbar.render();
-   pubSub.subscribe("change-tab" ,category => {
+    pubSub.subscribe("change-tab" ,category => {
         reservationForm.setType(category);
         spinner.classList.remove("d-none");
         middlewareComponent.load().then((r) => {
@@ -39,42 +39,38 @@ middlewareComponent.load().then(remoteData=>{
             componentTable.render();
         });
     });
-    reservationForm.setType(navbar.getCurrentCategory());
 
     componentTable.build(hours, days);
-    spinner.classList.remove("d-none");
-    componenteFetch.getData("clinica").then(data => {
-        spinner.classList.add("d-none");
-        componentTable.setData(data, navbar.getCurrentCategory());
-        componentTable.render();
-    });
+    componentTable.setData(remoteData.bookings, navbar.getCurrentCategory());
+    componentTable.render();
 
-    reservationForm.build(hours);
+    reservationForm.build(hours, remoteData.types);
+    reservationForm.setType(navbar.getCurrentCategory());
     reservationForm.render();
-    reservationForm.onsubmit(r => {
-        if (componentTable.add(r)) {
+    pubSub.subscribe("form-send", booking => {
+        if (componentTable.add(booking)) {
             reservationForm.setStatus(true);
             componentTable.setData(componentTable.getData(), navbar.getCurrentCategory());
-            componenteFetch.setData("clinica", componentTable.getData()).then(r => console.log(r));
+            middlewareComponent.insert(booking).then(r => console.log(r));
         }
         else {
             reservationForm.setStatus(false);
         }
     });
-    reservationForm.oncancel(() => componentTable.render());
+    pubSub.subscribe("form-cancel", () => componentTable.render());
 
-    prevButton.build('Settimana precedente') ;
-    nextButton.build('Settimana\nsuccessiva') ;
+    prevButton.build('Settimana precedente', "prevButton") ;
+    nextButton.build('Settimana\nsuccessiva', "nextButton") ;
 
     prevButton.render() ;
-    prevButton.onsubmit(() => {
+    pubSub.subscribe("prevButton-clicked", () => {
         componentTable.previous();
         componentTable.setData(componentTable.getData(), navbar.getCurrentCategory());  
         componentTable.render();
     }) ;
 
     nextButton.render() ;
-    nextButton.onsubmit(() => {
+    pubSub.subscribe("nextButton-clicked", () => {
         componentTable.next();
         componentTable.setData(componentTable.getData(), navbar.getCurrentCategory());  
         componentTable.render();
@@ -83,9 +79,9 @@ middlewareComponent.load().then(remoteData=>{
     setInterval(() => {
         reservationForm.setType(navbar.getCurrentCategory());
         spinner.classList.remove("d-none");
-        componenteFetch.getData("clinica").then((r) => {
+        middlewareComponent.load().then((r) => {
             spinner.classList.add("d-none");
-            componentTable.setData(r ,navbar.getCurrentCategory())
+            componentTable.setData(r.bookings ,navbar.getCurrentCategory())
             componentTable.render();
         });
     }, 300000);

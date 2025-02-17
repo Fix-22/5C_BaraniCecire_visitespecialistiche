@@ -43,10 +43,12 @@ export const generateMiddleware=()=>{
             }
         },
         insert: (booking) => {
-            const body = booking;
             const fetchOptions = {
                 method: 'post',
-                body: body
+                headers: {
+                    "content-type": "application/json"
+                },
+                body: JSON.stringify(booking)
             };
 
             try {

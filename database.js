@@ -38,12 +38,7 @@ const database = {
    insert: async (booking) => {
       let sql = `
          INSERT INTO booking(idType, date, hour, name)
-         VALUES (
-            '${booking.idType}', 
-            '${booking.date}', 
-            '${booking.hour}', 
-            '${booking.name})'
-           `;
+         VALUES (${booking.idType},STR_TO_DATE('${booking.date}', '%Y-%m-%d'),${booking.hour},'${booking.name}');`;
       const result = await executeQuery(sql);
    },
    delete: (id) => {

@@ -1,17 +1,12 @@
-export const generateReservationForm = (parentElement) => {
+export const generateReservationForm = (parentElement, pubSub) => {
     let configuration;
-    let submitCallback, cancelCallback;
     let type;
+    let types;
 
     return {
-        build: (inputConfiguration) => {
+        build: (inputConfiguration, inputTypes) => {
             configuration = inputConfiguration;
-        },
-        onsubmit: (inputCallback) => {
-            submitCallback = inputCallback;
-        },
-        oncancel: (inputCallback) => {
-            cancelCallback = inputCallback;
+            types = inputTypes;
         },
         render: () => {
             let html = '<form id="reservationForm" class="container"><label>Data</label><input type="date" id="dateInput" class="form-control"><label>Ora</label><select id="hourInput" class="form-select">';
@@ -28,19 +23,23 @@ export const generateReservationForm = (parentElement) => {
             
             submitButton.onclick = () => {
                 // struttura dati con i valori della form
-                let dateVal = document.getElementById("dateInput").value.split("-");
+                let dateVal = document.getElementById("dateInput").value;
                 let hourVal = document.getElementById("hourInput").value;
                 let nameVal = document.getElementById("nameInput").value;
 
-                const key = type + "-" + parseInt(dateVal[2]) + "/" + parseInt(dateVal[1]) + "/" + dateVal[0] + "-" + hourVal;
-                const reservation = {}
-                reservation[key] = nameVal;
+                const booking = {
+                    idType: Object.values(types).map(e => e.name).indexOf(type) + 1,
+                    date: dateVal,
+                    hour: parseInt(hourVal),
+                    name: nameVal
+                };
+                console.log(booking)
 
                 document.querySelectorAll(".form-control").forEach(e => e.value = "");
                 document.querySelector("#hourInput").value = configuration[0];
                 document.getElementById("resultLabel").innerText = "";
                 
-                submitCallback(reservation);
+                pubSub.publish("form-send", booking);
             };
 
             document.querySelectorAll(".clearForm").forEach(b => { // per i pulsanti che svuotano i campi del form
@@ -49,7 +48,7 @@ export const generateReservationForm = (parentElement) => {
                     document.querySelector("#hourInput").value = configuration[0];
                     document.getElementById("resultLabel").innerText = "";
 
-                    cancelCallback();
+                    pubSub.publish("form-cancel");
                 }
             });
         },
