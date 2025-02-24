@@ -22,6 +22,7 @@ export const generateTable = (parentElement) => {
             let html = '<table class="table table-bordered"> <thead>' ;
             let dataKeys = Object.keys(currentData);
             let dataValues = Object.values(currentData);
+            console.log(dataValues+"dd");
 
             //Headers
             html += "<tr><th class='table-secondary'>#</th>";
@@ -42,7 +43,9 @@ export const generateTable = (parentElement) => {
             parentElement.innerHTML = html ;
         },
         add : (reservation) => {
+            
             if (!cacheData[Object.keys(reservation)[0]]) { //Se è presente il valore
+                //console.log("eb");
                 cacheData[Object.keys(reservation)[0]] = Object.values(reservation)[0];
                 return true;
             }

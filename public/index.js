@@ -47,16 +47,24 @@ middlewareComponent.load().then(remoteData=>{
     reservationForm.build(hours, remoteData.types);
     reservationForm.setType(navbar.getCurrentCategory());
     reservationForm.render();
-    pubSub.subscribe("form-send", booking => {
-        if (componentTable.add(booking)) {
-            reservationForm.setStatus(true);
-            componentTable.setData(componentTable.getData(), navbar.getCurrentCategory());
-            middlewareComponent.insert(booking).then(r => console.log(r));
-        }
-        else {
-            reservationForm.setStatus(false);
-        }
-    });
+    let dataDB;
+    fetch("/bookings").then(r => r.json).then((result)=>{
+        dataDB=result;
+        console.log(dataDB);
+        pubSub.subscribe("form-send", booking => {
+            if (componentTable.add(booking)) {
+                reservationForm.setStatus(true);
+                componentTable.setData(dataDB, navbar.getCurrentCategory());
+                middlewareComponent.insert(booking).then(r => console.log(r));
+                componentTable.render();
+            }
+            else {
+                reservationForm.setStatus(false);
+            }
+        });
+    })
+
+    
     pubSub.subscribe("form-cancel", () => componentTable.render());
 
     prevButton.build('Settimana precedente', "prevButton") ;
