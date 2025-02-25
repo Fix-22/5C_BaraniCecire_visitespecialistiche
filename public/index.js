@@ -39,11 +39,10 @@ const isBookable = (data, booking) => { // controlla se la prenotazione in data 
 
 middlewareComponent.load().then(remoteData=>{
     spinner.classList.add("d-none");
+    console.log(remoteData)
     const types = remoteData.types.map(e=>e.name);
     const bookings = remoteData.bookings.map(e => {
-        let d = new Date(Date.parse(e.date.split("T")[0])); // settato su UTC quindi da aumentare di un giorno
-        d.setDate(d.getDate() + 1);
-        e.date = d;
+        e.date = new Date(Date.parse(e.date));
         return e;
     });
 
@@ -52,9 +51,7 @@ middlewareComponent.load().then(remoteData=>{
         middlewareComponent.load().then((r) => {
             spinner.classList.add("d-none");
             componentTable.setData(r.bookings.map(e => {
-                let d = new Date(Date.parse(e.date.split("T")[0])); // settato su UTC quindi da aumentare di un giorno
-                d.setDate(d.getDate() + 1);
-                e.date = d;
+                e.date = new Date(Date.parse(e.date));
                 return e;
             }));
             componentTable.setType(navbar.getCurrentCategory());
