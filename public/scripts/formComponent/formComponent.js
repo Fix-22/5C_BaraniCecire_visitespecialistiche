@@ -28,7 +28,8 @@ export const generateReservationForm = (parentElement, pubSub) => {
                 let nameVal = document.getElementById("nameInput").value;
 
                 const booking = {
-                    idType: Object.values(types).map(e => e.name).indexOf(type) + 1,
+                    idType: types.indexOf(type) + 1,
+                    type: type,
                     date: dateVal,
                     hour: parseInt(hourVal),
                     name: nameVal
@@ -66,6 +67,7 @@ export const generateReservationForm = (parentElement, pubSub) => {
         clear: () => {
             document.querySelectorAll(".form-control").forEach(e => e.value = "");
             document.querySelector("#hourInput").value = configuration[0];
+            document.getElementById("resultLabel").innerText = "";
         }
     };
 };

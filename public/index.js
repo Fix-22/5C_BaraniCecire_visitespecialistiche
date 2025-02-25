@@ -23,47 +23,69 @@ const prevButton = generateButtonComponent(prevButtonContainer, pubSub) ;
 const nextButton = generateButtonComponent(nextButtonContainer, pubSub) ;
 const middlewareComponent= generateMiddleware();
 
+const isBookable = (data, booking) => { // controlla se la prenotazione in data e ora e tipo è già presente in remoto
+    let bookable = true;
+
+    data.forEach(e => {
+        let d = new Date(Date.parse(booking.date));
+        if (e.date.getDate() === d.getDate() && e.date.getMonth() === d.getMonth() && e.date.getFullYear() === d.getFullYear() && e.hour === booking.hour && e.type === booking.type) {
+            bookable = false;
+            return;
+        }
+    });
+
+    return bookable;
+}
+
 middlewareComponent.load().then(remoteData=>{
     spinner.classList.add("d-none");
-    console.log(remoteData);
     const types = remoteData.types.map(e=>e.name);
+    const bookings = remoteData.bookings.map(e => {
+        let d = new Date(Date.parse(e.date.split("T")[0])); // settato su UTC quindi da aumentare di un giorno
+        d.setDate(d.getDate() + 1);
+        e.date = d;
+        return e;
+    });
+
+    pubSub.subscribe("get-remote-data", () => {
+        spinner.classList.remove("d-none");
+        middlewareComponent.load().then((r) => {
+            spinner.classList.add("d-none");
+            componentTable.setData(r.bookings.map(e => {
+                let d = new Date(Date.parse(e.date.split("T")[0])); // settato su UTC quindi da aumentare di un giorno
+                d.setDate(d.getDate() + 1);
+                e.date = d;
+                return e;
+            }));
+            componentTable.setType(navbar.getCurrentCategory());
+            componentTable.render();
+        });
+    });
 
     navbar.build(types);
     navbar.render();
     pubSub.subscribe("change-tab" ,category => {
         reservationForm.setType(category);
-        spinner.classList.remove("d-none");
-        middlewareComponent.load().then((r) => {
-            spinner.classList.add("d-none");
-            componentTable.setData(r.bookings ,category);
-            componentTable.render();
-        });
+        pubSub.publish("get-remote-data"); // riscarica dati da db
     });
 
-    componentTable.build(hours, days);
-    componentTable.setData(remoteData.bookings, navbar.getCurrentCategory());
+    componentTable.build(hours, days, bookings, navbar.getCurrentCategory());
     componentTable.render();
 
-    reservationForm.build(hours, remoteData.types);
+    reservationForm.build(hours, types);
     reservationForm.setType(navbar.getCurrentCategory());
     reservationForm.render();
-    let dataDB;
-    fetch("/bookings").then(r => r.json).then((result)=>{
-        dataDB=result;
-        console.log(dataDB);
-        pubSub.subscribe("form-send", booking => {
-            if (componentTable.add(booking)) {
+    pubSub.subscribe("form-send", booking => {
+        if (isBookable(bookings, booking)) {
+            middlewareComponent.insert(booking).then(r => {
                 reservationForm.setStatus(true);
-                componentTable.setData(dataDB, navbar.getCurrentCategory());
-                middlewareComponent.insert(booking).then(r => console.log(r));
-                componentTable.render();
-            }
-            else {
-                reservationForm.setStatus(false);
-            }
-        });
-    })
-
+                pubSub.publish("get-remote-data");
+            });
+        }
+        else {
+            reservationForm.setStatus(false);
+        }
+    });
     
     pubSub.subscribe("form-cancel", () => componentTable.render());
 
@@ -73,24 +95,17 @@ middlewareComponent.load().then(remoteData=>{
     prevButton.render() ;
     pubSub.subscribe("prevButton-clicked", () => {
         componentTable.previous();
-        componentTable.setData(componentTable.getData(), navbar.getCurrentCategory());  
         componentTable.render();
     }) ;
 
     nextButton.render() ;
     pubSub.subscribe("nextButton-clicked", () => {
-        componentTable.next();
-        componentTable.setData(componentTable.getData(), navbar.getCurrentCategory());  
+        componentTable.next();  
         componentTable.render();
     }) ;
 
     setInterval(() => {
         reservationForm.setType(navbar.getCurrentCategory());
-        spinner.classList.remove("d-none");
-        middlewareComponent.load().then((r) => {
-            spinner.classList.add("d-none");
-            componentTable.setData(r.bookings ,navbar.getCurrentCategory())
-            componentTable.render();
-        });
+        pubSub.publish("get-remote-data");
     }, 300000);
 })

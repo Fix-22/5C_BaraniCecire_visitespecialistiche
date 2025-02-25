@@ -1,5 +1,5 @@
-const bodyParser = require('body-parser');
 const express = require("express");
+const bodyParser = require('body-parser');
 const http = require('http');
 const path = require('path');
 const app = express();
@@ -31,13 +31,14 @@ app.delete('/delete/:id', async (req, res) => {
   await database.delete(req.params.id);
   res.json({result: "ok"});
 })
-const server = http.createServer(app);
-const port = 5600;
-server.listen(port, () => {
-  console.log("- server running on port: " + port);
-});
 
 app.get('/types', async (req, res) => {
   const list = await database.selectTypes();
   res.json(list);
+});
+
+const server = http.createServer(app);
+const port = 5600;
+server.listen(port, () => {
+  console.log("- server running on port: " + port);
 });
