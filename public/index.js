@@ -25,9 +25,11 @@ const middlewareComponent= generateMiddleware();
 
 const isBookable = (data, booking) => { // controlla se la prenotazione in data e ora e tipo è già presente in remoto
     let bookable = true;
+    console.log(data)
 
     data.forEach(e => {
         let d = new Date(Date.parse(booking.date));
+        console.log(e.date.getDate() === d.getDate(), e.date.getMonth() === d.getMonth(), e.date.getFullYear() === d.getFullYear(), e.hour === booking.hour, e.type === booking.type)
         if (e.date.getDate() === d.getDate() && e.date.getMonth() === d.getMonth() && e.date.getFullYear() === d.getFullYear() && e.hour === booking.hour && e.type === booking.type) {
             bookable = false;
             return;
@@ -40,8 +42,8 @@ const isBookable = (data, booking) => { // controlla se la prenotazione in data 
 middlewareComponent.load().then(remoteData=>{
     spinner.classList.add("d-none");
     console.log(remoteData)
-    const types = remoteData.types.map(e=>e.name);
-    const bookings = remoteData.bookings.map(e => {
+    let types = remoteData.types.map(e=>e.name);
+    let bookings = remoteData.bookings.map(e => {
         e.date = new Date(Date.parse(e.date));
         return e;
     });
@@ -49,11 +51,12 @@ middlewareComponent.load().then(remoteData=>{
     pubSub.subscribe("get-remote-data", () => {
         spinner.classList.remove("d-none");
         middlewareComponent.load().then((r) => {
-            spinner.classList.add("d-none");
-            componentTable.setData(r.bookings.map(e => {
+            bookings = r.bookings.map(e => {
                 e.date = new Date(Date.parse(e.date));
                 return e;
-            }));
+            });
+            spinner.classList.add("d-none");
+            componentTable.setData(bookings);
             componentTable.setType(navbar.getCurrentCategory());
             componentTable.render();
         });
