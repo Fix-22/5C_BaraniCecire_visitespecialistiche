@@ -25,11 +25,9 @@ const middlewareComponent= generateMiddleware();
 
 const isBookable = (data, booking) => { // controlla se la prenotazione in data e ora e tipo è già presente in remoto
     let bookable = true;
-    console.log(data)
 
     data.forEach(e => {
         let d = new Date(Date.parse(booking.date));
-        console.log(e.date.getDate() === d.getDate(), e.date.getMonth() === d.getMonth(), e.date.getFullYear() === d.getFullYear(), e.hour === booking.hour, e.type === booking.type)
         if (e.date.getDate() === d.getDate() && e.date.getMonth() === d.getMonth() && e.date.getFullYear() === d.getFullYear() && e.hour === booking.hour && e.type === booking.type) {
             bookable = false;
             return;
